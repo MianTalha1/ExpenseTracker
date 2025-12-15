@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@casha/shared": ["../../packages/shared/src"],
+      "@casha/shared/*": ["../../packages/shared/src/*"]
+    },
+    "skipLibCheck": true,
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedModules": true
+  },
+  "include": ["src/**/*", "../../packages/shared/src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(dir:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm dev)",
+      "Bash(cmd /c \"taskkill /F /PID 10124\")",
+      "Bash(powershell -Command \"Stop-Process -Id 10124 -Force\")",
+      "Bash(curl:*)",
+      "Bash(powershell -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(find:*)",
+      "Bash(xargs:*)",
+      "WebFetch(domain:21st.dev)",
+      "Bash(npx shadcn@latest init -y)",
+      "Bash(npx shadcn@latest init --defaults --force)",
+      "Bash(npx shadcn:*)",
+      "Bash(npx shadcn@latest add progress -y)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npx drizzle-kit push)",
+      "Bash(pnpm add:*)",
+      "Bash(cmd /c \"taskkill /F /PID 8796\")",
+      "Bash(powershell -Command \"Stop-Process -Id 8796 -Force\")",
+      "Bash(cmd /c:*)",
+      "Bash(cat:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(ls:*)"
+    ]
+  }
+}

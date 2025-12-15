@@ -1,0 +1,58 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '@/lib/context/AuthContext';
+import { ThemeProvider } from '@/lib/context/ThemeContext';
+
+// Layouts
+import { AuthLayout } from '@/components/templates/AuthLayout';
+import { AppShell } from '@/components/templates/AppShell';
+import { ProtectedRoute } from '@/components/templates/ProtectedRoute';
+
+// Public Pages
+import { LoginPage } from '@/app/(public)/login/LoginPage';
+import { RegisterPage } from '@/app/(public)/register/RegisterPage';
+
+// Authenticated Pages
+import { DashboardPage } from '@/app/(authenticated)/dashboard/DashboardPage';
+import { ExpensesPage } from '@/app/(authenticated)/expenses/ExpensesPage';
+import { BudgetsPage } from '@/app/(authenticated)/budgets/BudgetsPage';
+import { InsightsPage } from '@/app/(authenticated)/insights/InsightsPage';
+import { SettingsPage } from '@/app/(authenticated)/settings/SettingsPage';
+import { ChatPage } from '@/app/(authenticated)/chat/ChatPage';
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
+
+          {/* Protected Routes */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppShell />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/expenses" element={<ExpensesPage />} />
+            <Route path="/budgets" element={<BudgetsPage />} />
+            <Route path="/insights" element={<InsightsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+          </Route>
+
+          {/* Default Redirect */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+
+export default App;
