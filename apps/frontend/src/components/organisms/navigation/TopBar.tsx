@@ -69,7 +69,7 @@ export function TopBar({ onQuickAdd }: TopBarProps) {
           variant="primary"
           size="icon-sm"
           onClick={onQuickAdd}
-          className="sm:hidden rounded-full"
+          className="sm:hidden !rounded-full !w-11 !h-11 !p-0"
           aria-label="Add expense"
         >
           <Plus className="h-5 w-5" />

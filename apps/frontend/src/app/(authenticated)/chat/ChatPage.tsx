@@ -18,6 +18,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Button, Input, Spinner } from '@/components/atoms';
 import { useChat } from '@/lib/hooks';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 import { cn } from '@/lib/utils/cn';
 import type { ChatMessage } from '@casha/shared';
 
@@ -39,6 +40,7 @@ export function ChatPage() {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -158,8 +160,15 @@ export function ChatPage() {
           )}
         </div>
 
-        {/* Input Area - Fixed above bottom navbar on mobile */}
-        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-border p-4 bg-surface lg:relative lg:bottom-0 lg:left-auto lg:right-auto lg:z-auto">
+        {/* Input Area - Fixed above keyboard when visible, otherwise above navbar */}
+        <div
+          className={cn(
+            "fixed left-0 right-0 z-30 border-t border-border p-4 bg-surface lg:relative lg:bottom-0 lg:z-auto transition-all duration-200",
+            !isKeyboardVisible && "bottom-[calc(5rem+env(safe-area-inset-bottom))]",
+            isKeyboardVisible && "bottom-0"
+          )}
+          style={isKeyboardVisible && keyboardHeight > 0 ? { bottom: `${keyboardHeight}px` } : undefined}
+        >
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2">
               <Input

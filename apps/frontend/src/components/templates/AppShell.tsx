@@ -15,6 +15,18 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-background pl-safe-left pr-safe-right">
+      {/* Top Safe Area Barrier - Fixed, covers status bar on mobile */}
+      <div
+        className="fixed top-0 left-0 right-0 h-safe-top bg-surface z-50 lg:hidden"
+        aria-hidden="true"
+      />
+
+      {/* Bottom Safe Area Barrier - Fixed, covers home indicator on mobile */}
+      <div
+        className="fixed bottom-0 left-0 right-0 h-safe-bottom bg-background z-50 lg:hidden"
+        aria-hidden="true"
+      />
+
       {/* Desktop Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}

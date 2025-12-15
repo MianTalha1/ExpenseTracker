@@ -4,8 +4,9 @@
  */
 
 import { useLocation, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, Receipt, Target, TrendingUp, MessageSquare } from 'lucide-react';
+import { useKeyboard } from '@/lib/hooks/useKeyboard';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
@@ -18,10 +19,19 @@ const navItems = [
 export function BottomNav() {
   const location = useLocation();
   const activeIndex = navItems.findIndex((item) => location.pathname.startsWith(item.to));
+  const { isKeyboardVisible } = useKeyboard();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden pb-safe-bottom">
-      <div className="relative flex items-center justify-center gap-4 bg-white/20 dark:bg-black/20 backdrop-blur-2xl mx-4 mb-2 rounded-full px-4 py-3 shadow-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+    <AnimatePresence>
+      {!isKeyboardVisible && (
+        <motion.nav
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className="fixed bottom-0 left-0 right-0 z-40 lg:hidden pb-safe-bottom"
+        >
+          <div className="relative flex items-center justify-center gap-4 bg-white/20 dark:bg-black/20 backdrop-blur-2xl mx-4 mb-2 rounded-full px-4 py-3 shadow-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
 
         {/* Active Indicator Glow */}
         {activeIndex >= 0 && (
@@ -65,7 +75,9 @@ export function BottomNav() {
             </motion.div>
           );
         })}
-      </div>
-    </nav>
+          </div>
+        </motion.nav>
+      )}
+    </AnimatePresence>
   );
 }
