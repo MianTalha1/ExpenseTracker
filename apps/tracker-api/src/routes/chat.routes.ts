@@ -7,7 +7,7 @@ import { Router } from 'express';
 import { firebaseAuthMiddleware, type FirebaseAuthRequest } from '../middleware/firebase-auth.middleware';
 import { validateBody } from '../middleware/validation.middleware';
 import { sendMessageSchema } from '../validation/schemas';
-import { chatService, type ChatMessage } from '../services/chat.service';
+import { chatService, type ChatMessage, type UserContext } from '../services/chat.service';
 
 const router = Router();
 
@@ -21,10 +21,11 @@ router.post(
   validateBody(sendMessageSchema),
   async (req: FirebaseAuthRequest, res) => {
     try {
-      const { message, history } = req.body as {
+      const { message, history, context } = req.body as {
         message: string;
         conversationId?: string;
         history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+        context?: UserContext;
       };
 
       // Set SSE headers
@@ -42,11 +43,11 @@ router.post(
         { role: 'user' as const, content: message },
       ];
 
-      // Stream AI response
+      // Stream AI response with user context
       let fullResponse = '';
 
       try {
-        for await (const chunk of chatService.streamChatCompletion(messagesForAI)) {
+        for await (const chunk of chatService.streamChatCompletion(messagesForAI, context)) {
           fullResponse += chunk;
           res.write(`event: message\ndata: ${JSON.stringify({ content: chunk })}\n\n`);
         }

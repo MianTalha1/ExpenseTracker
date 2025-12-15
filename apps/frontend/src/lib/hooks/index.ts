@@ -8,3 +8,4 @@ export { useExpenses, useRecentExpenses } from './useExpenses';
 export { useBudgets } from './useBudgets';
 export { useInsights, useAIInsights, useDashboardData } from './useInsights';
 export { useChat } from './useChat';
+export { useDailyRecommendations } from './useDailyRecommendations';

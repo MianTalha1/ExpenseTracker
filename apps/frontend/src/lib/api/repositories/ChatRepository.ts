@@ -12,10 +12,20 @@ interface StreamCallbacks {
   onError?: (error: string) => void;
 }
 
+interface UserContext {
+  totalSpent?: number;
+  totalBudget?: number;
+  remaining?: number;
+  topCategories?: Array<{ name: string; amount: number; percentage: number }>;
+  recentExpenses?: Array<{ description: string; amount: number; category: string; date: string }>;
+  spendingTrend?: 'up' | 'down' | 'stable';
+}
+
 interface SendMessageRequest {
   message: string;
   conversationId?: string;
   history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  context?: UserContext;
 }
 
 class ChatRepositoryClass {
@@ -58,6 +68,9 @@ class ChatRepositoryClass {
     const decoder = new TextDecoder();
     let buffer = '';
 
+    let currentEvent = '';
+    let fullResponse = '';
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -67,40 +80,30 @@ class ChatRepositoryClass {
       buffer = lines.pop() || '';
 
       for (const line of lines) {
-        if (line.startsWith('event: ')) {
-          const eventType = line.slice(7).trim();
-          const dataLineIndex = lines.indexOf(line) + 1;
-          const dataLine = lines[dataLineIndex];
+        const trimmedLine = line.trim();
 
-          if (dataLine?.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(dataLine.slice(6));
+        if (trimmedLine.startsWith('event: ')) {
+          currentEvent = trimmedLine.slice(7).trim();
+        } else if (trimmedLine.startsWith('data: ')) {
+          const dataStr = trimmedLine.slice(6);
 
-              switch (eventType) {
-                case 'message':
-                  callbacks.onMessage?.(data.content);
-                  break;
-                case 'done':
-                  callbacks.onDone?.(data.fullResponse);
-                  break;
-                case 'error':
-                  callbacks.onError?.(data.message);
-                  break;
-              }
-            } catch {
-              // Skip malformed JSON
-            }
-          }
-        } else if (line.startsWith('data: ')) {
-          // Handle data without explicit event
           try {
-            const data = JSON.parse(line.slice(6));
-            if (data.content) {
+            const data = JSON.parse(dataStr);
+
+            if (currentEvent === 'message' || (!currentEvent && data.content)) {
+              fullResponse += data.content || '';
               callbacks.onMessage?.(data.content);
+            } else if (currentEvent === 'done') {
+              callbacks.onDone?.(data.fullResponse || fullResponse);
+            } else if (currentEvent === 'error') {
+              callbacks.onError?.(data.message || 'Unknown error');
             }
           } catch {
             // Skip malformed JSON
           }
+
+          // Reset event after processing data
+          currentEvent = '';
         }
       }
     }

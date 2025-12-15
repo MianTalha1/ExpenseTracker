@@ -28,7 +28,10 @@
       "Bash(cmd /c:*)",
       "Bash(cat:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(pnpm --filter frontend build:*)",
+      "Bash(pnpm --filter frontend add:*)",
+      "Bash(npx cap:*)"
     ]
   }
 }

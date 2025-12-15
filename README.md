@@ -9,6 +9,7 @@ A modern expense tracking application with AI-powered insights, built with a Ben
 - **Database**: PostgreSQL + Drizzle ORM
 - **Auth**: JWT + bcrypt
 - **AI**: OpenRouter API (for insights)
+- **Mobile**: Capacitor (Android)
 - **Package Manager**: pnpm monorepo
 
 ## Project Structure
@@ -101,8 +102,8 @@ casha/
 | `pnpm db:generate` | Generate Drizzle migrations |
 | `pnpm db:migrate` | Run database migrations |
 | `pnpm db:studio` | Open Drizzle Studio |
- pnpm db:seed
- 4. Creates: test@example.com / password123
+| `pnpm db:seed` | Seed database (creates test@example.com / password123) |
+
 ## API Endpoints
 
 | Method | Endpoint | Description |
@@ -160,6 +161,52 @@ VITE_API_URL=http://localhost:3001
 # Optional: AI Insights
 OPENROUTER_API_KEY=your-openrouter-api-key
 ```
+
+## Mobile App (Android)
+
+Casha includes Capacitor for building a native Android app.
+
+### Prerequisites
+
+- Android Studio installed
+- Android SDK configured
+
+### Mobile Scripts
+
+| Script | Description |
+|--------|-------------|
+| `pnpm --filter frontend cap:build` | Build frontend + sync to Android |
+| `pnpm --filter frontend cap:sync` | Sync web assets to Android |
+| `pnpm --filter frontend cap:android` | Open project in Android Studio |
+
+### Building for Android
+
+1. **Configure API URL** (required for mobile):
+   ```bash
+   # Edit apps/frontend/.env
+   VITE_API_URL=https://your-api-server.com
+   ```
+   > Note: `localhost` won't work on mobile - use your server URL or computer's IP for local testing.
+
+2. **Build and sync**:
+   ```bash
+   pnpm --filter frontend cap:build
+   ```
+
+3. **Open in Android Studio**:
+   ```bash
+   pnpm --filter frontend cap:android
+   ```
+
+4. **Run on device/emulator** from Android Studio.
+
+### Local Testing
+
+To test with your local API server:
+1. Find your computer's IP: `ipconfig` (Windows) or `ifconfig` (Mac/Linux)
+2. Set `VITE_API_URL=http://192.168.x.x:3001` in `.env`
+3. Ensure phone and computer are on the same WiFi network
+4. Rebuild: `pnpm --filter frontend cap:build`
 
 ## License
 

@@ -12,9 +12,12 @@ import {
   addMessage,
   updateConversationTitle,
   deleteConversation as deleteConversationService,
+  subscribeToExpenses,
+  subscribeToBudgets,
+  calculateSpendingSummary,
 } from '@/lib/firebase/services';
 import { useAuth } from '@/lib/context/AuthContext';
-import type { ChatConversation, ChatMessage } from '@casha/shared';
+import type { ChatConversation, ChatMessage, Expense, Budget } from '@casha/shared';
 
 interface UseChatReturn {
   conversations: ChatConversation[];
@@ -40,6 +43,10 @@ export function useChat(): UseChatReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Financial context for RAG
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+
   const messagesUnsubscribeRef = useRef<(() => void) | null>(null);
 
   // Subscribe to conversations list
@@ -59,6 +66,67 @@ export function useChat(): UseChatReturn {
       setError(err instanceof Error ? err : new Error('Failed to load conversations'));
     }
   }, [user]);
+
+  // Subscribe to expenses and budgets for context
+  useEffect(() => {
+    if (!user) {
+      setExpenses([]);
+      setBudgets([]);
+      return;
+    }
+
+    const unsubExpenses = subscribeToExpenses((exps) => setExpenses(exps));
+    const unsubBudgets = subscribeToBudgets((buds) => setBudgets(buds));
+
+    return () => {
+      unsubExpenses();
+      unsubBudgets();
+    };
+  }, [user]);
+
+  // Build context for AI
+  const buildContext = useCallback(() => {
+    if (expenses.length === 0) return undefined;
+
+    // Get overall budget (the one with null categoryId)
+    const overallBudget = budgets.find((b) => b.categoryId === null) || null;
+    const summary = calculateSpendingSummary(expenses, overallBudget, 'month');
+
+    // Simple category spending calculation
+    const categoryMap = new Map<string, number>();
+    expenses.forEach((e) => {
+      const existing = categoryMap.get(e.categoryId) || 0;
+      categoryMap.set(e.categoryId, existing + e.amount);
+    });
+    const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const categorySpending = Array.from(categoryMap.entries())
+      .map(([categoryId, amount]) => ({
+        name: categoryId, // Using categoryId as name since we don't have category data here
+        amount,
+        percentage: totalAmount > 0 ? (amount / totalAmount) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    // Get recent expenses (last 10)
+    const recentExpenses = [...expenses]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 10)
+      .map((e) => ({
+        description: e.description || 'Expense',
+        amount: e.amount,
+        category: e.categoryId,
+        date: new Date(e.date).toLocaleDateString(),
+      }));
+
+    return {
+      totalSpent: summary.totalSpent,
+      totalBudget: summary.totalBudget,
+      remaining: summary.remaining,
+      topCategories: categorySpending.slice(0, 5),
+      recentExpenses,
+      spendingTrend: summary.percentageUsed > 80 ? 'up' as const : summary.percentageUsed < 50 ? 'down' as const : 'stable' as const,
+    };
+  }, [expenses, budgets]);
 
   // Load a conversation and subscribe to its messages
   const loadConversation = useCallback(async (id: string) => {
@@ -134,14 +202,18 @@ export function useChat(): UseChatReturn {
       // Add the new user message to history
       history.push({ role: 'user', content: trimmedMessage });
 
+      // Build context with user's financial data
+      const context = buildContext();
+
       let fullContent = '';
 
-      // Stream AI response
+      // Stream AI response with context
       await chatRepository.sendMessageStream(
         {
           message: trimmedMessage,
           conversationId,
           history,
+          context,
         },
         {
           onMessage: (content) => {
@@ -171,7 +243,7 @@ export function useChat(): UseChatReturn {
       setError(err instanceof Error ? err : new Error('Failed to send message'));
       setIsStreaming(false);
     }
-  }, [currentConversationId, isStreaming, messages]);
+  }, [currentConversationId, isStreaming, messages, buildContext]);
 
   const deleteConversation = useCallback(async (id: string) => {
     try {

@@ -20,8 +20,8 @@ export function BottomNav() {
   const activeIndex = navItems.findIndex((item) => location.pathname.startsWith(item.to));
 
   return (
-    <nav className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 lg:hidden">
-      <div className="relative flex items-center justify-center gap-4 bg-white/20 dark:bg-black/20 backdrop-blur-2xl rounded-full px-4 py-3 shadow-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden pb-safe-bottom">
+      <div className="relative flex items-center justify-center gap-4 bg-white/20 dark:bg-black/20 backdrop-blur-2xl mx-4 mb-2 rounded-full px-4 py-3 shadow-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
 
         {/* Active Indicator Glow */}
         {activeIndex >= 0 && (

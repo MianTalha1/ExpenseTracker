@@ -9,9 +9,15 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "cap:sync": "cap sync",
+    "cap:android": "cap open android",
+    "cap:build": "pnpm build && cap sync"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "@casha/shared": "workspace:*",
     "@radix-ui/react-progress": "^1.1.8",
     "class-variance-authority": "^0.7.1",

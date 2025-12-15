@@ -35,3 +35,6 @@ coverage/
 *.tsbuildinfo
 .turbo/
 nul
+
+# Capacitor Android
+apps/frontend/android/

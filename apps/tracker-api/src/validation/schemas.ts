@@ -139,6 +139,23 @@ export const sendMessageSchema = z.object({
     role: z.enum(['user', 'assistant']),
     content: z.string(),
   })).optional(),
+  context: z.object({
+    totalSpent: z.number().optional(),
+    totalBudget: z.number().optional(),
+    remaining: z.number().optional(),
+    topCategories: z.array(z.object({
+      name: z.string(),
+      amount: z.number(),
+      percentage: z.number(),
+    })).optional(),
+    recentExpenses: z.array(z.object({
+      description: z.string(),
+      amount: z.number(),
+      category: z.string(),
+      date: z.string(),
+    })).optional(),
+    spendingTrend: z.enum(['up', 'down', 'stable']).optional(),
+  }).optional(),
 });
 
 export const chatQuerySchema = z.object({

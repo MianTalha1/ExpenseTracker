@@ -159,7 +159,7 @@ export function ChatPage() {
         </div>
 
         {/* Input Area - Fixed above bottom navbar on mobile */}
-        <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-border p-4 bg-surface lg:relative lg:bottom-0 lg:left-auto lg:right-auto lg:z-auto">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-border p-4 bg-surface lg:relative lg:bottom-0 lg:left-auto lg:right-auto lg:z-auto">
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2">
               <Input
@@ -176,12 +176,12 @@ export function ChatPage() {
                 size="icon"
                 onClick={handleSend}
                 disabled={!input.trim() || isStreaming}
-                className="rounded-full"
+                className="rounded-full w-12 h-12 min-w-12 flex-shrink-0"
               >
                 {isStreaming ? (
                   <Spinner size="sm" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 )}
               </Button>
             </div>

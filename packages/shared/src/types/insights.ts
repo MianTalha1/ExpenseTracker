@@ -53,3 +53,17 @@ export interface AIAdviceResponse {
   insights: AIInsight[];
   generatedAt: string;
 }
+
+export interface DailyRecommendation {
+  id: string;
+  userId: string;
+  date: string; // YYYY-MM-DD format
+  recommendations: AIInsight[];
+  context: {
+    totalSpent: number;
+    totalBudget: number;
+    topCategories: string[];
+    spendingTrend: 'up' | 'down' | 'stable';
+  };
+  generatedAt: string;
+}

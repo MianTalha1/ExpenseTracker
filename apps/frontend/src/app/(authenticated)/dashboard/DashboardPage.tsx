@@ -5,9 +5,10 @@
 
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/context/AuthContext';
-import { useDashboardData, useAIInsights } from '@/lib/hooks/useInsights';
+import { useDashboardData } from '@/lib/hooks/useInsights';
 import { useBudgets } from '@/lib/hooks/useBudgets';
 import { useRecentExpenses } from '@/lib/hooks/useExpenses';
+import { useDailyRecommendations } from '@/lib/hooks/useDailyRecommendations';
 import { BentoCard, BudgetProgress, Skeleton } from '@/components/atoms';
 import {
   TrendingUp,
@@ -18,6 +19,10 @@ import {
   Lightbulb,
   AlertCircle,
   RefreshCw,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -40,7 +45,12 @@ export function DashboardPage() {
   const { summary, trends, isLoading: isLoadingStats, error: statsError, refetch: refetchStats } = useDashboardData();
   const { categoryBudgets, isLoading: isLoadingBudgets } = useBudgets();
   const { expenses: recentExpenses, isLoading: isLoadingExpenses } = useRecentExpenses(4);
-  const { insights: aiInsights, isLoading: isLoadingInsights } = useAIInsights('month');
+  const {
+    recommendations,
+    isLoading: isLoadingRecommendations,
+    refresh: refreshRecommendations,
+    lastUpdated,
+  } = useDailyRecommendations();
 
   // Calculate days left in month
   const daysLeft = new Date(
@@ -49,8 +59,17 @@ export function DashboardPage() {
     0
   ).getDate() - new Date().getDate();
 
-  // Get the first AI insight
-  const primaryInsight = aiInsights[0];
+  // Get icon for recommendation severity
+  const getSeverityIcon = (severity: 'info' | 'warning' | 'success') => {
+    switch (severity) {
+      case 'success':
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
+      default:
+        return <Info className="h-4 w-4 text-info" />;
+    }
+  };
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -291,58 +310,79 @@ export function DashboardPage() {
         </BentoCard>
       </div>
 
-      {/* AI Insight - Bottom */}
-      <BentoCard className="p-5 border-l-4 border-l-casha-primary">
-        {isLoadingInsights ? (
-          <div className="flex items-start gap-4">
-            <Skeleton className="h-10 w-10 rounded-bento-sm" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
+      {/* Daily Recommendations - Bottom */}
+      <BentoCard
+        header={
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-casha-primary" />
+              <span>Daily Recommendations</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {lastUpdated && (
+                <span className="text-xs text-text-muted font-normal">
+                  Updated {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+              <button
+                onClick={refreshRecommendations}
+                disabled={isLoadingRecommendations}
+                className="p-1 hover:bg-surface-hover rounded transition-colors disabled:opacity-50"
+                title="Refresh recommendations"
+              >
+                <RefreshCw className={cn('h-4 w-4 text-text-muted', isLoadingRecommendations && 'animate-spin')} />
+              </button>
             </div>
           </div>
-        ) : primaryInsight ? (
-          <div className="flex items-start gap-4">
-            <div
-              className={cn(
-                'p-2 rounded-bento-sm',
-                primaryInsight.severity === 'warning'
-                  ? 'bg-warning/10'
-                  : primaryInsight.severity === 'success'
-                  ? 'bg-success/10'
-                  : 'bg-casha-primary/10'
-              )}
-            >
-              <Lightbulb
+        }
+      >
+        {isLoadingRecommendations ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-start gap-3 p-3 bg-surface-muted rounded-bento-sm">
+                <Skeleton className="h-4 w-4 rounded-full flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : recommendations.length > 0 ? (
+          <div className="space-y-3">
+            {recommendations.map((rec) => (
+              <div
+                key={rec.id}
                 className={cn(
-                  'h-5 w-5',
-                  primaryInsight.severity === 'warning'
-                    ? 'text-warning'
-                    : primaryInsight.severity === 'success'
-                    ? 'text-success'
-                    : 'text-casha-primary'
+                  'flex items-start gap-3 p-3 rounded-bento-sm border-l-2',
+                  rec.severity === 'success' && 'bg-success/5 border-l-success',
+                  rec.severity === 'warning' && 'bg-warning/5 border-l-warning',
+                  rec.severity === 'info' && 'bg-info/5 border-l-info'
                 )}
-              />
-            </div>
-            <div>
-              <h3 className="font-semibold text-text-primary">
-                {primaryInsight.title || 'AI Insight'}
-              </h3>
-              <p className="text-text-secondary mt-1">
-                {primaryInsight.message}
-              </p>
-            </div>
+              >
+                <div className="mt-0.5">
+                  {getSeverityIcon(rec.severity)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-text-primary text-sm">
+                    {rec.title}
+                  </h4>
+                  <p className="text-text-secondary text-sm mt-0.5">
+                    {rec.message}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 py-4">
             <div className="p-2 bg-casha-primary/10 rounded-bento-sm">
               <Lightbulb className="h-5 w-5 text-casha-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-text-primary">AI Insight</h3>
+              <h3 className="font-semibold text-text-primary">No Recommendations Yet</h3>
               <p className="text-text-secondary mt-1">
-                Add more expenses to get personalized insights and recommendations
+                Add more expenses to get personalized daily recommendations
                 about your spending habits.
               </p>
             </div>

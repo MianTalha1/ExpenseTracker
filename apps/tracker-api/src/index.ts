@@ -17,6 +17,7 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 // Import routes (AI features only)
 import insightsRoutes from './routes/insights.routes';
 import chatRoutes from './routes/chat.routes';
+import recommendationsRoutes from './routes/recommendations.routes';
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use('/api', apiRateLimit);
 // Mount AI-powered routes only
 app.use('/api/insights', insightsRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
 
 // ============================================================================
 // Error Handling
@@ -107,6 +109,7 @@ app.listen(env.API_PORT, () => {
   console.log('  Active Routes:');
   console.log('    POST /api/insights/ai-advice');
   console.log('    POST /api/chat/stream');
+  console.log('    POST /api/recommendations/daily');
   console.log('===========================================');
   console.log('');
 });

@@ -31,6 +31,15 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface UserContext {
+  totalSpent?: number;
+  totalBudget?: number;
+  remaining?: number;
+  topCategories?: Array<{ name: string; amount: number; percentage: number }>;
+  recentExpenses?: Array<{ description: string; amount: number; category: string; date: string }>;
+  spendingTrend?: 'up' | 'down' | 'stable';
+}
+
 export class ChatService {
   private apiKey: string;
   private model: string;
@@ -45,11 +54,53 @@ export class ChatService {
   }
 
   /**
+   * Build context-aware system prompt
+   */
+  private buildSystemPrompt(context?: UserContext): string {
+    if (!context || Object.keys(context).length === 0) {
+      return SYSTEM_PROMPT;
+    }
+
+    let contextInfo = '\n\nUSER\'S CURRENT FINANCIAL DATA:\n';
+
+    if (context.totalSpent !== undefined && context.totalBudget !== undefined) {
+      contextInfo += `- Total spent this month: $${context.totalSpent.toFixed(2)}\n`;
+      contextInfo += `- Monthly budget: $${context.totalBudget.toFixed(2)}\n`;
+      if (context.remaining !== undefined) {
+        contextInfo += `- Remaining budget: $${context.remaining.toFixed(2)}\n`;
+      }
+    }
+
+    if (context.spendingTrend) {
+      contextInfo += `- Spending trend: ${context.spendingTrend}\n`;
+    }
+
+    if (context.topCategories && context.topCategories.length > 0) {
+      contextInfo += '\nTop spending categories:\n';
+      context.topCategories.slice(0, 5).forEach((cat) => {
+        contextInfo += `  - ${cat.name}: $${cat.amount.toFixed(2)} (${cat.percentage.toFixed(1)}%)\n`;
+      });
+    }
+
+    if (context.recentExpenses && context.recentExpenses.length > 0) {
+      contextInfo += '\nRecent expenses:\n';
+      context.recentExpenses.slice(0, 5).forEach((exp) => {
+        contextInfo += `  - ${exp.description}: $${exp.amount.toFixed(2)} (${exp.category}) on ${exp.date}\n`;
+      });
+    }
+
+    contextInfo += '\nUse this data to provide personalized financial advice when relevant to the user\'s question.';
+
+    return SYSTEM_PROMPT + contextInfo;
+  }
+
+  /**
    * Stream chat completion using OpenRouter
    * Yields chunks of the response as they arrive
    */
   async *streamChatCompletion(
-    messages: ChatMessage[]
+    messages: ChatMessage[],
+    context?: UserContext
   ): AsyncGenerator<string, void, unknown> {
     if (!this.apiKey) {
       // Fallback for non-configured API
@@ -57,8 +108,9 @@ export class ChatService {
       return;
     }
 
+    const systemPrompt = this.buildSystemPrompt(context);
     const fullMessages: ChatMessage[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: systemPrompt },
       ...messages,
     ];
 
