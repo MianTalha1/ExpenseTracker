@@ -158,8 +158,8 @@ export function ChatPage() {
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="border-t border-border p-4 bg-surface">
+        {/* Input Area - Fixed above bottom navbar on mobile */}
+        <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-border p-4 bg-surface lg:relative lg:bottom-0 lg:left-auto lg:right-auto lg:z-auto">
           <div className="max-w-3xl mx-auto">
             <div className="flex gap-2">
               <Input
@@ -185,9 +185,7 @@ export function ChatPage() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-text-muted mt-2 text-center">
-              Casha AI focuses on personal finance topics only
-            </p>
+
           </div>
         </div>
       </div>

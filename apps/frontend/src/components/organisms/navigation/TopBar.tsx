@@ -38,7 +38,7 @@ export function TopBar({ onQuickAdd }: TopBarProps) {
   };
 
   return (
-    <header className="bg-surface border-b border-border pt-safe-top">
+    <header className="sticky top-0 z-40 bg-surface border-b border-border pt-safe-top">
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
       {/* Left - Mobile Logo */}
       <div className="flex items-center gap-2 lg:hidden">

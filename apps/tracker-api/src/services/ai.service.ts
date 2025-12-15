@@ -101,8 +101,12 @@ Provide 2-4 insights based on the data.`,
         throw new Error('No content in AI response');
       }
 
-      // Parse the JSON response
-      const parsed = JSON.parse(content);
+      // Parse the JSON response - strip markdown code blocks if present
+      let jsonContent = content.trim();
+      if (jsonContent.startsWith('```')) {
+        jsonContent = jsonContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      }
+      const parsed = JSON.parse(jsonContent);
 
       if (!parsed.insights || !Array.isArray(parsed.insights)) {
         throw new Error('Invalid AI response format');
