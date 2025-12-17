@@ -18,7 +18,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db, auth } from '../config';
-import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '@casha/shared';
+import type { Category, CreateCategoryRequest, UpdateCategoryRequest, CategoryType } from '@casha/shared';
 
 // Get user's categories collection reference
 function getCategoriesRef() {
@@ -35,6 +35,8 @@ function toCategory(id: string, data: Record<string, unknown>): Category {
     name: data.name as string,
     color: data.color as string,
     icon: (data.icon as string) || null,
+    type: (data.type as CategoryType) || 'expense',
+    budgetLimit: (data.budgetLimit as number) ?? null,
   };
 }
 
@@ -70,6 +72,8 @@ export async function createCategory(data: CreateCategoryRequest): Promise<Categ
     name: data.name,
     color: data.color,
     icon: data.icon || null,
+    type: data.type,
+    budgetLimit: data.budgetLimit ?? null,
     createdAt: serverTimestamp(),
   };
 
@@ -80,6 +84,8 @@ export async function createCategory(data: CreateCategoryRequest): Promise<Categ
     name: data.name,
     color: data.color,
     icon: data.icon || null,
+    type: data.type,
+    budgetLimit: data.budgetLimit ?? null,
   };
 }
 
@@ -94,6 +100,8 @@ export async function updateCategory(
   if (data.name !== undefined) updateData.name = data.name;
   if (data.color !== undefined) updateData.color = data.color;
   if (data.icon !== undefined) updateData.icon = data.icon;
+  if (data.type !== undefined) updateData.type = data.type;
+  if (data.budgetLimit !== undefined) updateData.budgetLimit = data.budgetLimit;
 
   const docRef = doc(getCategoriesRef(), id);
   await updateDoc(docRef, updateData);

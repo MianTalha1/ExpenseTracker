@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/lib/context/AuthContext';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
+import { NetworkProvider } from '@/lib/context/NetworkContext';
+import { OfflineToast } from '@/components/atoms/OfflineToast';
 
 // Layouts
 import { AuthLayout } from '@/components/templates/AuthLayout';
@@ -18,17 +20,29 @@ import { BudgetsPage } from '@/app/(authenticated)/budgets/BudgetsPage';
 import { InsightsPage } from '@/app/(authenticated)/insights/InsightsPage';
 import { SettingsPage } from '@/app/(authenticated)/settings/SettingsPage';
 import { ChatPage } from '@/app/(authenticated)/chat/ChatPage';
+import { OnboardingPage } from '@/app/(authenticated)/onboarding/OnboardingPage';
 
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Routes>
+      <NetworkProvider>
+        <AuthProvider>
+          <Routes>
           {/* Public Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
           </Route>
+
+          {/* Onboarding Route (Protected, no AppShell) */}
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <OnboardingPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Routes */}
           <Route
@@ -50,7 +64,9 @@ function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </AuthProvider>
+        <OfflineToast />
+        </AuthProvider>
+      </NetworkProvider>
     </ThemeProvider>
   );
 }

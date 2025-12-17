@@ -25,6 +25,16 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
 
+      // Income sources subcollection
+      match /incomeSources/{incomeId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Daily recommendations subcollection
+      match /dailyRecommendations/{recommendationId} {
+        allow read, write: if isOwner(userId);
+      }
+
       // Chat conversations subcollection
       match /chatConversations/{conversationId} {
         allow read, write: if isOwner(userId);

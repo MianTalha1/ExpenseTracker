@@ -8,6 +8,8 @@ export interface User {
   email: string;
   name: string | null;
   createdAt: string;
+  onboardingCompleted?: boolean;
+  onboardingCompletedAt?: string;
 }
 
 export interface CreateUserRequest {

@@ -60,6 +60,8 @@ export async function seedMockData(): Promise<void> {
       name: cat.name,
       color: cat.color,
       icon: cat.icon,
+      type: cat.type,
+      budgetLimit: cat.budgetLimit,
       createdAt: serverTimestamp(),
     });
   }

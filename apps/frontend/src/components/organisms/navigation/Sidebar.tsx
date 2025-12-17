@@ -49,9 +49,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-casha-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">$</span>
-          </div>
+          <img src="/logo.png" alt="Casha" className="h-8 w-8 flex-shrink-0" />
           {!collapsed && (
             <span className="text-xl font-bold text-text-primary">
               Casha

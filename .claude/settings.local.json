@@ -31,7 +31,17 @@
       "Bash(ls:*)",
       "Bash(pnpm --filter frontend build:*)",
       "Bash(pnpm --filter frontend add:*)",
-      "Bash(npx cap:*)"
+      "Bash(npx cap:*)",
+      "Bash(tree:*)",
+      "Bash(copy:*)",
+      "Bash(powershell:*)",
+      "Bash(where java:*)",
+      "Bash(git -C \"D:\\Vanar-D\\OpenAi-App\\App 1\\Expense-tracker\" status --short)",
+      "Bash(npx @capacitor/assets:*)",
+      "Bash(node generate-icons.mjs:*)",
+      "Bash(npx tsc:*)",
+      "Bash(java:*)",
+      "Bash(.gradlew.bat --stop)"
     ]
   }
 }

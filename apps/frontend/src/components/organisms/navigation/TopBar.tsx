@@ -42,9 +42,7 @@ export function TopBar({ onQuickAdd }: TopBarProps) {
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
       {/* Left - Mobile Logo */}
       <div className="flex items-center gap-2 lg:hidden">
-        <div className="h-8 w-8 rounded-full bg-casha-primary flex items-center justify-center">
-          <span className="text-white font-bold text-sm">$</span>
-        </div>
+        <img src="/logo.png" alt="Casha" className="h-8 w-8" />
         <span className="font-bold text-lg text-text-primary">Casha</span>
       </div>
 

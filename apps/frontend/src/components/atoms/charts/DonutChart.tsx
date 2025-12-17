@@ -53,6 +53,12 @@ export function DonutChart({
               ))}
             </Pie>
             <Tooltip
+              position={{ x: 0, y: 190 }}
+              wrapperStyle={{
+                left: '50%',
+                transform: 'translateX(-50%)',
+                pointerEvents: 'none',
+              }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload as DonutChartData;

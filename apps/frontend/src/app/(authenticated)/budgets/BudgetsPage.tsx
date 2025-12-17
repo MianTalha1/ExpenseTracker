@@ -7,13 +7,15 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Edit2, Trash2, DollarSign } from 'lucide-react';
+import { Plus, Edit2, Trash2, DollarSign, Tag, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { BentoCard, Button, BudgetProgress, Badge, Modal, ModalFooter, Select, Skeleton } from '@/components/atoms';
 import { FormField } from '@/components/molecules';
+import { CategoryModal, IncomeSourceModal } from '@/components/organisms';
 import { useBudgets } from '@/lib/hooks/useBudgets';
 import { useCategories } from '@/lib/hooks/useCategories';
-import type { BudgetWithProgress } from '@casha/shared';
+import { useIncome } from '@/lib/hooks/useIncome';
+import type { BudgetWithProgress, Category, IncomeSource } from '@casha/shared';
 
 // Budget form schema
 const budgetSchema = z.object({
@@ -34,6 +36,16 @@ export function BudgetsPage() {
   const [editBudget, setEditBudget] = useState<BudgetWithProgress | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  // Category modal state
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
+
+  // Income modal state
+  const [incomeModalOpen, setIncomeModalOpen] = useState(false);
+  const [editIncomeSource, setEditIncomeSource] = useState<IncomeSource | null>(null);
+  const [deleteIncomeId, setDeleteIncomeId] = useState<string | null>(null);
+
   const {
     overallBudget,
     categoryBudgets,
@@ -45,7 +57,14 @@ export function BudgetsPage() {
     deleteBudget,
   } = useBudgets();
 
-  const { categories } = useCategories();
+  const { categories, isLoading: categoriesLoading, deleteCategory } = useCategories();
+
+  const {
+    incomeSources,
+    totalMonthlyIncome,
+    isLoading: incomeLoading,
+    deleteIncomeSource,
+  } = useIncome();
 
   // Get categories that don't have budgets yet
   const availableCategories = categories.filter(
@@ -119,6 +138,62 @@ export function BudgetsPage() {
     reset();
   };
 
+  // Category handlers
+  const handleEditCategory = (category: Category) => {
+    setEditCategory(category);
+    setCategoryModalOpen(true);
+  };
+
+  const handleCloseCategoryModal = () => {
+    setCategoryModalOpen(false);
+    setEditCategory(null);
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await deleteCategory(id);
+      toast.success('Category deleted successfully');
+      setDeleteCategoryId(null);
+    } catch {
+      toast.error('Failed to delete category');
+    }
+  };
+
+  // Income handlers
+  const handleEditIncomeSource = (source: IncomeSource) => {
+    setEditIncomeSource(source);
+    setIncomeModalOpen(true);
+  };
+
+  const handleCloseIncomeModal = () => {
+    setIncomeModalOpen(false);
+    setEditIncomeSource(null);
+  };
+
+  const handleDeleteIncomeSource = async (id: string) => {
+    try {
+      await deleteIncomeSource(id);
+      toast.success('Income source deleted successfully');
+      setDeleteIncomeId(null);
+    } catch {
+      toast.error('Failed to delete income source');
+    }
+  };
+
+  // Format frequency for display
+  const formatFrequency = (frequency: string) => {
+    switch (frequency) {
+      case 'monthly':
+        return '/mo';
+      case 'yearly':
+        return '/yr';
+      case 'one-time':
+        return 'once';
+      default:
+        return '';
+    }
+  };
+
   if (error) {
     return (
       <div className="py-12 text-center">
@@ -140,13 +215,107 @@ export function BudgetsPage() {
             Set and track your spending limits
           </p>
         </div>
-        <Button
-          leftIcon={<Plus className="h-4 w-4" />}
-          onClick={() => setAddModalOpen(true)}
-        >
-          Add Budget
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            leftIcon={<Tag className="h-4 w-4" />}
+            onClick={() => setCategoryModalOpen(true)}
+          >
+            Add Category
+          </Button>
+          <Button
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => setAddModalOpen(true)}
+          >
+            Add Budget
+          </Button>
+        </div>
       </div>
+
+      {/* Monthly Income Section */}
+      <BentoCard className="p-6 bg-gradient-to-r from-success/5 to-transparent border-success/20">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-bento-sm bg-success/10 flex items-center justify-center">
+              <Wallet className="h-5 w-5 text-success" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">Monthly Income</h2>
+              <p className="text-2xl font-bold text-success">
+                ${totalMonthlyIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => setIncomeModalOpen(true)}
+          >
+            Add Source
+          </Button>
+        </div>
+
+        {incomeLoading ? (
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-20 w-36 flex-shrink-0 rounded-bento-sm" />
+            ))}
+          </div>
+        ) : incomeSources.length === 0 ? (
+          <div
+            className="border-2 border-dashed border-success/30 rounded-bento-sm p-4 text-center cursor-pointer hover:border-success/50 transition-colors"
+            onClick={() => setIncomeModalOpen(true)}
+          >
+            <p className="text-text-muted text-sm">No income sources added yet</p>
+            <p className="text-text-muted text-xs mt-1">Click to add your first income source</p>
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {incomeSources.map((source) => (
+              <div
+                key={source.id}
+                className="flex-shrink-0 bg-surface-secondary rounded-bento-sm p-3 min-w-[140px] group relative"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-text-primary truncate max-w-[100px]">
+                    {source.name}
+                  </span>
+                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => handleEditIncomeSource(source)}
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => setDeleteIncomeId(source.id)}
+                      className="text-text-muted hover:text-error"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-lg font-bold text-text-primary">
+                  ${source.amount.toLocaleString()}
+                  <span className="text-xs font-normal text-text-muted ml-1">
+                    {formatFrequency(source.frequency)}
+                  </span>
+                </p>
+              </div>
+            ))}
+            <div
+              className="flex-shrink-0 border-2 border-dashed border-border rounded-bento-sm p-3 min-w-[100px] flex items-center justify-center cursor-pointer hover:border-success/50 transition-colors"
+              onClick={() => setIncomeModalOpen(true)}
+            >
+              <Plus className="h-5 w-5 text-text-muted" />
+            </div>
+          </div>
+        )}
+      </BentoCard>
 
       {/* Overall Budget - Featured Card */}
       {isLoading ? (
@@ -367,6 +536,82 @@ export function BudgetsPage() {
         )}
       </div>
 
+      {/* Categories Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-text-primary">
+            Categories
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => setCategoryModalOpen(true)}
+          >
+            Add Category
+          </Button>
+        </div>
+
+        {categoriesLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-16 rounded-bento-sm" />
+            ))}
+          </div>
+        ) : categories.length === 0 ? (
+          <BentoCard
+            className="p-6 border-2 border-dashed border-border cursor-pointer hover:border-casha-primary/50"
+            onClick={() => setCategoryModalOpen(true)}
+          >
+            <div className="text-center py-4">
+              <Tag className="h-8 w-8 mx-auto mb-2 text-text-muted" />
+              <p className="text-text-secondary">No categories yet</p>
+              <p className="text-sm text-text-muted">Create your first category to start tracking expenses</p>
+            </div>
+          </BentoCard>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {categories.map((category) => (
+              <BentoCard key={category.id} className="p-3 group" hover="lift">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      className="w-4 h-4 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: category.color }}
+                    />
+                    <span className="text-sm font-medium text-text-primary truncate">
+                      {category.name}
+                    </span>
+                  </div>
+                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => handleEditCategory(category)}
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => setDeleteCategoryId(category.id)}
+                      className="text-text-muted hover:text-error"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-1">
+                  <Badge variant={category.type === 'expense' ? 'warning' : 'success'} size="sm">
+                    {category.type}
+                  </Badge>
+                </div>
+              </BentoCard>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Add/Edit Budget Modal */}
       <Modal
         isOpen={addModalOpen || editBudget !== null}
@@ -459,6 +704,62 @@ export function BudgetsPage() {
           <Button
             variant="danger"
             onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+          >
+            Delete
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Category Modal */}
+      <CategoryModal
+        isOpen={categoryModalOpen}
+        onClose={handleCloseCategoryModal}
+        editCategory={editCategory}
+      />
+
+      {/* Delete Category Confirmation Modal */}
+      <Modal
+        isOpen={deleteCategoryId !== null}
+        onClose={() => setDeleteCategoryId(null)}
+        title="Delete Category"
+        description="Are you sure you want to delete this category? Expenses using this category will show as 'Unknown'."
+        size="sm"
+      >
+        <ModalFooter>
+          <Button variant="secondary" onClick={() => setDeleteCategoryId(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deleteCategoryId && handleDeleteCategory(deleteCategoryId)}
+          >
+            Delete
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Income Source Modal */}
+      <IncomeSourceModal
+        isOpen={incomeModalOpen}
+        onClose={handleCloseIncomeModal}
+        editSource={editIncomeSource}
+      />
+
+      {/* Delete Income Source Confirmation Modal */}
+      <Modal
+        isOpen={deleteIncomeId !== null}
+        onClose={() => setDeleteIncomeId(null)}
+        title="Delete Income Source"
+        description="Are you sure you want to delete this income source? This action cannot be undone."
+        size="sm"
+      >
+        <ModalFooter>
+          <Button variant="secondary" onClick={() => setDeleteIncomeId(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deleteIncomeId && handleDeleteIncomeSource(deleteIncomeId)}
           >
             Delete
           </Button>

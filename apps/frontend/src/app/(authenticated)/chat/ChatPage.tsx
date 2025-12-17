@@ -12,12 +12,14 @@ import {
   DollarSign,
   PiggyBank,
   TrendingUp,
+  WifiOff,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Button, Input, Spinner } from '@/components/atoms';
 import { useChat } from '@/lib/hooks';
+import { useNetwork } from '@/lib/context/NetworkContext';
 import { useKeyboard } from '@/lib/hooks/useKeyboard';
 import { cn } from '@/lib/utils/cn';
 import type { ChatMessage } from '@casha/shared';
@@ -36,6 +38,7 @@ export function ChatPage() {
     error,
     sendMessage,
   } = useChat();
+  const { isOnline } = useNetwork();
 
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -48,11 +51,11 @@ export function ChatPage() {
   }, [messages, streamingContent]);
 
   const handleSend = useCallback(async () => {
-    if (!input.trim() || isStreaming) return;
+    if (!input.trim() || isStreaming || !isOnline) return;
     const message = input;
     setInput('');
     await sendMessage(message);
-  }, [input, isStreaming, sendMessage]);
+  }, [input, isStreaming, isOnline, sendMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -148,8 +151,16 @@ export function ChatPage() {
                 </div>
               )}
 
+              {/* Offline Message */}
+              {!isOnline && (
+                <div className="p-3 bg-warning/10 border border-warning/20 rounded-bento-sm flex items-center gap-2">
+                  <WifiOff className="h-4 w-4 text-warning" />
+                  <p className="text-sm text-warning">Chatbot requires internet connection. You can still view previous conversations.</p>
+                </div>
+              )}
+
               {/* Error Message */}
-              {error && (
+              {error && isOnline && (
                 <div className="p-3 bg-error/10 border border-error/20 rounded-bento-sm">
                   <p className="text-sm text-error">{error.message}</p>
                 </div>
@@ -176,19 +187,21 @@ export function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about budgeting, saving, investments..."
-                disabled={isStreaming}
+                placeholder={isOnline ? "Ask about budgeting, saving, investments..." : "Offline - Chatbot unavailable"}
+                disabled={isStreaming || !isOnline}
                 className="flex-1"
               />
               <Button
                 variant="primary"
                 size="icon"
                 onClick={handleSend}
-                disabled={!input.trim() || isStreaming}
+                disabled={!input.trim() || isStreaming || !isOnline}
                 className="rounded-full w-12 h-12 min-w-12 flex-shrink-0"
               >
                 {isStreaming ? (
                   <Spinner size="sm" />
+                ) : !isOnline ? (
+                  <WifiOff className="h-5 w-5" />
                 ) : (
                   <Send className="h-5 w-5" />
                 )}

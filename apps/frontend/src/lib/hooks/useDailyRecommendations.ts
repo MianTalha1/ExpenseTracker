@@ -5,8 +5,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useNetwork } from '@/lib/context/NetworkContext';
 import {
   getTodayRecommendations,
+  getRecentRecommendations,
   saveDailyRecommendations,
   subscribeToExpenses,
   subscribeToBudgets,
@@ -22,17 +24,21 @@ interface UseDailyRecommendationsReturn {
   isLoading: boolean;
   error: Error | null;
   lastUpdated: string | null;
+  isOffline: boolean;
+  isCached: boolean;
   refresh: () => Promise<void>;
 }
 
 export function useDailyRecommendations(): UseDailyRecommendationsReturn {
   const { user, getIdToken } = useAuth();
+  const { isOnline } = useNetwork();
   const { categories } = useCategories();
   const [dailyRec, setDailyRec] = useState<DailyRecommendation | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isCached, setIsCached] = useState(false);
 
   // Subscribe to expenses for context building
   useEffect(() => {
@@ -134,6 +140,7 @@ export function useDailyRecommendations(): UseDailyRecommendationsReturn {
 
     setIsLoading(true);
     setError(null);
+    setIsCached(false);
 
     try {
       // First check if we have today's recommendations
@@ -141,11 +148,26 @@ export function useDailyRecommendations(): UseDailyRecommendationsReturn {
 
       if (existing) {
         setDailyRec(existing);
+        setIsCached(false);
         setIsLoading(false);
         return;
       }
 
-      // No existing recommendations, fetch from API
+      // No today's recommendations - if offline, try to get most recent cached
+      if (!isOnline) {
+        const recent = await getRecentRecommendations(7);
+        if (recent.length > 0) {
+          setDailyRec(recent[0]);
+          setIsCached(true);
+          setIsLoading(false);
+          return;
+        }
+        // No cached recommendations available
+        setIsLoading(false);
+        return;
+      }
+
+      // Online - fetch from API
       // Wait for expenses to load first
       if (expenses.length === 0 && budgets.length === 0) {
         // Data not loaded yet, will retry after data loads
@@ -164,20 +186,40 @@ export function useDailyRecommendations(): UseDailyRecommendationsReturn {
       setDailyRec(saved);
     } catch (err) {
       console.error('Failed to load recommendations:', err);
+      // If fetch failed and we're offline now, try to get cached
+      if (!isOnline) {
+        try {
+          const recent = await getRecentRecommendations(7);
+          if (recent.length > 0) {
+            setDailyRec(recent[0]);
+            setIsCached(true);
+            setIsLoading(false);
+            return;
+          }
+        } catch {
+          // Ignore cache fetch error
+        }
+      }
       setError(err instanceof Error ? err : new Error('Failed to load recommendations'));
     } finally {
       setIsLoading(false);
     }
-  }, [user, expenses, budgets, fetchFromAPI]);
+  }, [user, expenses, budgets, isOnline, fetchFromAPI]);
 
   // Load recommendations on mount and when expenses/budgets change
   useEffect(() => {
     loadRecommendations();
   }, [loadRecommendations]);
 
-  // Force refresh - regenerate recommendations
+  // Force refresh - regenerate recommendations (requires online)
   const refresh = useCallback(async () => {
     if (!user) return;
+
+    // Cannot refresh when offline
+    if (!isOnline) {
+      setError(new Error('Cannot refresh recommendations while offline'));
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -192,19 +234,22 @@ export function useDailyRecommendations(): UseDailyRecommendationsReturn {
       );
 
       setDailyRec(saved);
+      setIsCached(false);
     } catch (err) {
       console.error('Failed to refresh recommendations:', err);
       setError(err instanceof Error ? err : new Error('Failed to refresh recommendations'));
     } finally {
       setIsLoading(false);
     }
-  }, [user, fetchFromAPI]);
+  }, [user, isOnline, fetchFromAPI]);
 
   return {
     recommendations: dailyRec?.recommendations || [],
     isLoading,
     error,
     lastUpdated: dailyRec?.generatedAt || null,
+    isOffline: !isOnline,
+    isCached,
     refresh,
   };
 }

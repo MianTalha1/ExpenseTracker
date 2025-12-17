@@ -101,6 +101,8 @@ export async function getExpenses(
       name: 'Unknown',
       color: '#6B7280',
       icon: null,
+      type: 'expense' as const,
+      budgetLimit: null,
     },
   }));
 }
@@ -200,6 +202,8 @@ export async function getRecentExpenses(
       name: 'Unknown',
       color: '#6B7280',
       icon: null,
+      type: 'expense' as const,
+      budgetLimit: null,
     },
   }));
 }

@@ -23,6 +23,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   collection,
   writeBatch,
   serverTimestamp,
@@ -49,12 +50,41 @@ interface AuthProviderProps {
 // Convert Firestore user doc to our User type
 function toUser(uid: string, data: Record<string, unknown>): User {
   const createdAt = data.createdAt as { toDate?: () => Date } | undefined;
+  const onboardingCompletedAt = data.onboardingCompletedAt as { toDate?: () => Date } | undefined;
   return {
     id: uid,
     email: data.email as string,
     name: (data.name as string) || null,
     createdAt: createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    onboardingCompleted: (data.onboardingCompleted as boolean) ?? false,
+    onboardingCompletedAt: onboardingCompletedAt?.toDate?.()?.toISOString(),
   };
+}
+
+// Initialize default categories if none exist
+async function initializeDefaultCategories(userId: string): Promise<void> {
+  const categoriesRef = collection(db, 'users', userId, 'categories');
+  const categoriesSnap = await getDocs(categoriesRef);
+
+  if (categoriesSnap.empty) {
+    console.log('No categories found, creating defaults...');
+    const batch = writeBatch(db);
+
+    DEFAULT_CATEGORIES.forEach((category) => {
+      const categoryRef = doc(categoriesRef);
+      batch.set(categoryRef, {
+        name: category.name,
+        color: category.color,
+        icon: category.icon,
+        type: category.type,
+        budgetLimit: category.budgetLimit,
+        createdAt: serverTimestamp(),
+      });
+    });
+
+    await batch.commit();
+    console.log('Default categories created successfully');
+  }
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -89,6 +119,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               createdAt: new Date().toISOString(),
             });
           }
+
+          // Initialize default categories if none exist
+          await initializeDefaultCategories(fbUser.uid);
         } catch (error) {
           console.error('Error fetching user data:', error);
           // Fall back to basic user info from Firebase Auth
@@ -149,6 +182,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         name: category.name,
         color: category.color,
         icon: category.icon,
+        type: category.type,
+        budgetLimit: category.budgetLimit,
         createdAt: serverTimestamp(),
       });
     });

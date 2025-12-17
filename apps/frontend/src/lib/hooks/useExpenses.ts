@@ -123,6 +123,8 @@ export function useExpenses(options: UseExpensesOptions = {}): UseExpensesReturn
         name: 'Unknown',
         color: '#6B7280',
         icon: null,
+        type: 'expense' as const,
+        budgetLimit: null,
       },
     }));
 
@@ -222,6 +224,8 @@ export function useRecentExpenses(limit: number = 5) {
         name: 'Unknown',
         color: '#6B7280',
         icon: null,
+        type: 'expense' as const,
+        budgetLimit: null,
       },
     }));
   }, [expenses, categories]);

@@ -7,6 +7,7 @@ export * from './user';
 export * from './category';
 export * from './expense';
 export * from './budget';
+export * from './income';
 export * from './insights';
 export * from './chat';
 

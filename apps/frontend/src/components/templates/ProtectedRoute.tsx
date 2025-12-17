@@ -15,7 +15,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
   // Show loading while checking auth
@@ -30,6 +30,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Redirect to onboarding if not completed (unless already on onboarding page)
+  if (user && !user.onboardingCompleted && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Redirect to dashboard if onboarding is completed but user is on onboarding page
+  if (user && user.onboardingCompleted && location.pathname === '/onboarding') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

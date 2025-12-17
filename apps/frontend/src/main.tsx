@@ -5,6 +5,20 @@ import { Toaster } from 'sonner';
 import App from './App';
 import './styles/globals.css';
 
+// Register service worker for offline support
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        console.log('[SW] Service Worker registered:', registration.scope);
+      })
+      .catch((error) => {
+        console.warn('[SW] Service Worker registration failed:', error);
+      });
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

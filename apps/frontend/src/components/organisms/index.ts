@@ -4,4 +4,6 @@
  */
 
 export * from './auth';
+export * from './categories';
+export * from './income';
 export * from './navigation';
