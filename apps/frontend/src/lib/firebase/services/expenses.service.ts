@@ -41,6 +41,7 @@ function getExpensesRef() {
 function toExpense(id: string, data: Record<string, unknown>): Expense {
   const timestamp = data.date as Timestamp;
   const createdAtTimestamp = data.createdAt as Timestamp;
+  const lastReviewedAtTimestamp = data.lastReviewedAt as Timestamp | undefined;
 
   return {
     id,
@@ -51,6 +52,11 @@ function toExpense(id: string, data: Record<string, unknown>): Expense {
     date: timestamp?.toDate?.()?.toISOString() || new Date().toISOString(),
     isRecurring: (data.isRecurring as boolean) || false,
     recurringInterval: (data.recurringInterval as 'weekly' | 'monthly') || null,
+    // Bill reminder fields
+    isBill: (data.isBill as boolean) || false,
+    dueDay: (data.dueDay as number) || undefined,
+    reminderDays: (data.reminderDays as number) || undefined,
+    lastReviewedAt: lastReviewedAtTimestamp?.toDate?.()?.toISOString(),
     createdAt: createdAtTimestamp?.toDate?.()?.toISOString() || new Date().toISOString(),
   };
 }
@@ -150,6 +156,10 @@ export async function createExpense(data: CreateExpenseRequest): Promise<Expense
     date: Timestamp.fromDate(new Date(data.date)),
     isRecurring: data.isRecurring || false,
     recurringInterval: data.recurringInterval || null,
+    // Bill reminder fields
+    isBill: data.isBill || false,
+    dueDay: data.dueDay || null,
+    reminderDays: data.reminderDays || null,
     createdAt: Timestamp.now(),
   };
 
@@ -171,6 +181,10 @@ export async function updateExpense(
   if (data.date !== undefined) updateData.date = Timestamp.fromDate(new Date(data.date));
   if (data.isRecurring !== undefined) updateData.isRecurring = data.isRecurring;
   if (data.recurringInterval !== undefined) updateData.recurringInterval = data.recurringInterval;
+  // Bill reminder fields
+  if (data.isBill !== undefined) updateData.isBill = data.isBill;
+  if (data.dueDay !== undefined) updateData.dueDay = data.dueDay;
+  if (data.reminderDays !== undefined) updateData.reminderDays = data.reminderDays;
 
   const docRef = doc(getExpensesRef(), id);
   await updateDoc(docRef, updateData);

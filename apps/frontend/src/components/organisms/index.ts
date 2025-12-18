@@ -5,5 +5,6 @@
 
 export * from './auth';
 export * from './categories';
+export * from './expenses';
 export * from './income';
 export * from './navigation';

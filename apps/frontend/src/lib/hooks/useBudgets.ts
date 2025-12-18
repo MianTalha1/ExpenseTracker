@@ -12,6 +12,7 @@ import {
   calculateBudgetsProgress,
 } from '@/lib/firebase/services';
 import { subscribeToExpenses } from '@/lib/firebase/services';
+import { syncWidgetData } from '@/lib/services/widgetSync.service';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useCategories } from './useCategories';
 import type {
@@ -100,6 +101,19 @@ export function useBudgets(): UseBudgetsReturn {
     () => budgets.filter((b) => b.categoryId !== null),
     [budgets]
   );
+
+  // Sync widget data when overall budget changes
+  useEffect(() => {
+    if (overallBudget) {
+      syncWidgetData({
+        budgetAmount: overallBudget.amount,
+        spentAmount: overallBudget.spent,
+        remainingAmount: overallBudget.remaining,
+        percentUsed: overallBudget.percentage,
+        lastUpdated: new Date().toISOString(),
+      });
+    }
+  }, [overallBudget]);
 
   const refetch = useCallback(() => {
     setRefreshKey((k) => k + 1);

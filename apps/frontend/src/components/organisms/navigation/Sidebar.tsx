@@ -10,6 +10,7 @@ import {
   PiggyBank,
   Lightbulb,
   MessageSquare,
+  CreditCard,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -25,6 +26,7 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Expenses', href: '/expenses', icon: Receipt },
   { label: 'Budgets', href: '/budgets', icon: PiggyBank },
+  { label: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
   { label: 'Insights', href: '/insights', icon: Lightbulb },
   { label: 'Chat', href: '/chat', icon: MessageSquare },
 ];

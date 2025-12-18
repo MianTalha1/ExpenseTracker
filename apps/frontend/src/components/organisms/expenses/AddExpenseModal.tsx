@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { DollarSign, Calendar, FileText, RefreshCw } from 'lucide-react';
+import { DollarSign, Calendar, FileText, RefreshCw, Bell, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Modal, ModalFooter, Button, Select } from '@/components/atoms';
@@ -28,6 +28,10 @@ const addExpenseSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   isRecurring: z.boolean().default(false),
   recurringInterval: z.enum(['weekly', 'monthly']).optional(),
+  // Bill reminder fields
+  isBill: z.boolean().default(false),
+  dueDay: z.coerce.number().min(1).max(31).optional(),
+  reminderDays: z.coerce.number().min(1).max(30).optional(),
 });
 
 type AddExpenseFormData = z.infer<typeof addExpenseSchema>;
@@ -36,9 +40,14 @@ interface AddExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialValues?: {
+    amount?: string;
+    description?: string;
+    date?: string;
+  };
 }
 
-export function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalProps) {
+export function AddExpenseModal({ isOpen, onClose, onSuccess, initialValues }: AddExpenseModalProps) {
   const { categories, isLoading: isLoadingCategories } = useCategories();
 
   const {
@@ -57,17 +66,33 @@ export function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalP
       date: new Date().toISOString().split('T')[0],
       isRecurring: false,
       recurringInterval: undefined,
+      isBill: false,
+      dueDay: undefined,
+      reminderDays: 3,
     },
   });
 
   const isRecurring = watch('isRecurring');
+  const isBill = watch('isBill');
 
-  // Reset form when modal closes
+  // Reset form when modal closes or apply initial values when opening
   useEffect(() => {
     if (!isOpen) {
       reset();
+    } else if (initialValues) {
+      reset({
+        amount: initialValues.amount || '',
+        categoryId: '',
+        description: initialValues.description || '',
+        date: initialValues.date || new Date().toISOString().split('T')[0],
+        isRecurring: false,
+        recurringInterval: undefined,
+        isBill: false,
+        dueDay: undefined,
+        reminderDays: 3,
+      });
     }
-  }, [isOpen, reset]);
+  }, [isOpen, reset, initialValues]);
 
   const onSubmit = async (data: AddExpenseFormData) => {
     try {
@@ -78,6 +103,9 @@ export function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalP
         date: data.date,
         isRecurring: data.isRecurring,
         recurringInterval: data.isRecurring ? data.recurringInterval : undefined,
+        isBill: data.isRecurring && data.isBill,
+        dueDay: data.isRecurring && data.isBill ? data.dueDay : undefined,
+        reminderDays: data.isRecurring && data.isBill ? data.reminderDays : undefined,
       });
 
       toast.success('Expense added successfully!');
@@ -210,6 +238,87 @@ export function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalP
                 />
               )}
             />
+          </div>
+        )}
+
+        {/* Bill Toggle - Only show when recurring is enabled */}
+        {isRecurring && (
+          <div className="flex items-center justify-between py-2 animate-in slide-in-up">
+            <div className="flex items-center gap-2">
+              <Receipt className="h-4 w-4 text-text-muted" />
+              <div>
+                <p className="text-sm font-medium text-text-primary">Mark as Bill</p>
+                <p className="text-xs text-text-muted">Set due date and get reminders</p>
+              </div>
+            </div>
+            <Controller
+              name="isBill"
+              control={control}
+              render={({ field }) => (
+                <button
+                  type="button"
+                  onClick={() => field.onChange(!field.value)}
+                  className={cn(
+                    'relative w-11 h-6 rounded-full transition-colors duration-200',
+                    field.value ? 'bg-casha-primary' : 'bg-border'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 shadow-sm',
+                      field.value && 'translate-x-5'
+                    )}
+                  />
+                </button>
+              )}
+            />
+          </div>
+        )}
+
+        {/* Bill Due Date and Reminder Settings */}
+        {isRecurring && isBill && (
+          <div className="space-y-4 animate-in slide-in-up p-3 bg-surface-muted rounded-bento-sm">
+            <div className="flex items-center gap-2 text-sm text-casha-primary">
+              <Bell className="h-4 w-4" />
+              <span className="font-medium">Bill Reminder Settings</span>
+            </div>
+
+            {/* Due Day */}
+            <FormField
+              label="Due Day of Month"
+              type="number"
+              min={1}
+              max={31}
+              placeholder="e.g., 15"
+              leftIcon={<Calendar className="h-4 w-4" />}
+              error={errors.dueDay?.message}
+              {...register('dueDay')}
+            />
+
+            {/* Reminder Days */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-text-primary">
+                Remind Me
+              </label>
+              <Controller
+                name="reminderDays"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    value={String(field.value || 3)}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    options={[
+                      { value: '1', label: '1 day before' },
+                      { value: '2', label: '2 days before' },
+                      { value: '3', label: '3 days before' },
+                      { value: '5', label: '5 days before' },
+                      { value: '7', label: '1 week before' },
+                    ]}
+                  />
+                )}
+              />
+            </div>
           </div>
         )}
 

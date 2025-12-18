@@ -20,6 +20,7 @@ import { BudgetsPage } from '@/app/(authenticated)/budgets/BudgetsPage';
 import { InsightsPage } from '@/app/(authenticated)/insights/InsightsPage';
 import { SettingsPage } from '@/app/(authenticated)/settings/SettingsPage';
 import { ChatPage } from '@/app/(authenticated)/chat/ChatPage';
+import { SubscriptionsPage } from '@/app/(authenticated)/subscriptions/SubscriptionsPage';
 import { OnboardingPage } from '@/app/(authenticated)/onboarding/OnboardingPage';
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
             <Route path="/insights" element={<InsightsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
           </Route>
 
           {/* Default Redirect */}

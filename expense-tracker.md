@@ -36,6 +36,39 @@
 - Spending breakdown by category with percentages
 - AI-powered recommendations with severity levels (success, warning, info)
 
+## Smart Features (USPs)
+
+### Ask Before You Buy
+- AI-powered purchase advisor
+- Analyzes if purchase fits current budget
+- Considers spending patterns and goals
+- Quick access from dashboard
+
+### Smart Receipt Scanner
+- Capture receipts with camera
+- Auto-extract amount, vendor, and date using ML Kit OCR
+- Pre-fill expense form with extracted data
+- On-device processing (no cloud required)
+
+### Bill Due Reminders
+- Track recurring bills with due dates
+- Local notifications before bills are due
+- Configurable reminder days (1-7 days before)
+- Upcoming bills overview
+
+### Subscription Tracker
+- Dedicated view for all subscriptions
+- Monthly/yearly cost summary
+- Usage alerts for potentially unused subscriptions
+- Mark as reviewed feature
+- AI insights on subscription optimization
+
+### Android Widget
+- Home screen widget showing budget remaining
+- Real-time sync with app data
+- Quick glance at daily spending status
+- Progress bar visualization
+
 ## User Settings
 
 ### Profile

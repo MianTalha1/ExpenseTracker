@@ -16,10 +16,13 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
+    "@capacitor/camera": "^8.0.0",
     "@capacitor/cli": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "@capacitor/keyboard": "^8.0.0",
+    "@capacitor/local-notifications": "^8.0.0",
     "@capacitor/network": "^8.0.0",
+    "@capacitor/preferences": "^8.0.0",
     "@casha/shared": "workspace:*",
     "@radix-ui/react-progress": "^1.1.8",
     "class-variance-authority": "^0.7.1",
@@ -37,6 +40,7 @@
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "tesseract.js": "^7.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

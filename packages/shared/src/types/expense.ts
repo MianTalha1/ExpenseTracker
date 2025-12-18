@@ -17,6 +17,11 @@ export interface Expense {
   date: string;
   isRecurring: boolean;
   recurringInterval: RecurringInterval | null;
+  // Bill reminder fields
+  isBill?: boolean;
+  dueDay?: number; // Day of month (1-31)
+  reminderDays?: number; // Days before due to remind (default: 3)
+  lastReviewedAt?: string; // For subscription tracking
   createdAt: string;
 }
 
@@ -27,6 +32,9 @@ export interface CreateExpenseRequest {
   date: string;
   isRecurring?: boolean;
   recurringInterval?: RecurringInterval;
+  isBill?: boolean;
+  dueDay?: number;
+  reminderDays?: number;
 }
 
 export interface UpdateExpenseRequest {
@@ -36,6 +44,9 @@ export interface UpdateExpenseRequest {
   date?: string;
   isRecurring?: boolean;
   recurringInterval?: RecurringInterval;
+  isBill?: boolean;
+  dueDay?: number;
+  reminderDays?: number;
 }
 
 export interface ExpenseFilters {

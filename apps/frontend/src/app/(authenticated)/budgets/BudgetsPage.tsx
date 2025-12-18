@@ -7,7 +7,8 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Edit2, Trash2, DollarSign, Tag, Wallet } from 'lucide-react';
+import { Plus, Edit2, Trash2, DollarSign, Tag, Wallet, CreditCard } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { BentoCard, Button, BudgetProgress, Badge, Modal, ModalFooter, Select, Skeleton } from '@/components/atoms';
 import { FormField } from '@/components/molecules';
@@ -215,7 +216,15 @@ export function BudgetsPage() {
             Set and track your spending limits
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Link to="/subscriptions" className="lg:hidden">
+            <Button
+              variant="secondary"
+              leftIcon={<CreditCard className="h-4 w-4" />}
+            >
+              Subscriptions
+            </Button>
+          </Link>
           <Button
             variant="secondary"
             leftIcon={<Tag className="h-4 w-4" />}

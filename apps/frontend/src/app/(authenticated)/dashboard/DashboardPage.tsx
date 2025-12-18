@@ -3,6 +3,7 @@
  * Main dashboard with Bento grid layout - connected to real APIs
  */
 
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useDashboardData } from '@/lib/hooks/useInsights';
@@ -10,6 +11,7 @@ import { useBudgets } from '@/lib/hooks/useBudgets';
 import { useRecentExpenses } from '@/lib/hooks/useExpenses';
 import { useDailyRecommendations } from '@/lib/hooks/useDailyRecommendations';
 import { BentoCard, BudgetProgress, Skeleton } from '@/components/atoms';
+import { AskBeforeBuyModal } from '@/components/organisms';
 import {
   TrendingUp,
   TrendingDown,
@@ -23,6 +25,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Info,
+  ShoppingBag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -40,6 +43,7 @@ const categoryIcons: Record<string, string> = {
 export function DashboardPage() {
   const { user } = useAuth();
   const firstName = user?.name?.split(' ')[0] || 'there';
+  const [isAskBeforeBuyOpen, setIsAskBeforeBuyOpen] = useState(false);
 
   // Fetch real data using hooks
   const { summary, trends, isLoading: isLoadingStats, error: statsError, refetch: refetchStats } = useDashboardData();
@@ -195,6 +199,25 @@ export function DashboardPage() {
           </div>
         </BentoCard>
       </div>
+
+      {/* Should I Buy? - Quick Action */}
+      <button
+        onClick={() => setIsAskBeforeBuyOpen(true)}
+        className="w-full p-4 bg-gradient-to-r from-casha-primary to-casha-primary/80 rounded-bento text-white hover:opacity-90 transition-opacity"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-bento-sm">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold">Should I Buy This?</p>
+              <p className="text-sm text-white/80">Get AI advice before making a purchase</p>
+            </div>
+          </div>
+          <Sparkles className="h-5 w-5" />
+        </div>
+      </button>
 
       {/* Main Grid - Middle Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -389,6 +412,12 @@ export function DashboardPage() {
           </div>
         )}
       </BentoCard>
+
+      {/* Ask Before You Buy Modal */}
+      <AskBeforeBuyModal
+        isOpen={isAskBeforeBuyOpen}
+        onClose={() => setIsAskBeforeBuyOpen(false)}
+      />
     </div>
   );
 }

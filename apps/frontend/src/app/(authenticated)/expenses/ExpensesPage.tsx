@@ -4,19 +4,21 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Plus, Search, Filter, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { BentoCard, Button, Input, Badge, Select, Modal, ModalFooter, Skeleton } from '@/components/atoms';
 import { useExpenses } from '@/lib/hooks/useExpenses';
 import { useCategories } from '@/lib/hooks/useCategories';
-import { AddExpenseModal } from '@/components/organisms/expenses/AddExpenseModal';
+import { AddExpenseModal, ReceiptScannerModal } from '@/components/organisms/expenses';
 
 export function ExpensesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [prefillData, setPrefillData] = useState<{ amount: string; description: string; date: string } | null>(null);
 
   const { categories } = useCategories();
   const {
@@ -93,12 +95,21 @@ export function ExpensesPage() {
             Track and manage your spending
           </p>
         </div>
-        <Button
-          leftIcon={<Plus className="h-4 w-4" />}
-          onClick={() => setAddModalOpen(true)}
-        >
-          Add Expense
-        </Button>
+        <div className="flex gap-4">
+          <Button
+            variant="secondary"
+            onClick={() => setScannerOpen(true)}
+            title="Scan Receipt"
+          >
+            <Camera className="h-6 w-6" />
+          </Button>
+          <Button
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() => setAddModalOpen(true)}
+          >
+            Add Expense
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -324,8 +335,23 @@ export function ExpensesPage() {
       {/* Add Expense Modal */}
       <AddExpenseModal
         isOpen={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        onClose={() => {
+          setAddModalOpen(false);
+          setPrefillData(null);
+        }}
         onSuccess={refetch}
+        initialValues={prefillData ?? undefined}
+      />
+
+      {/* Receipt Scanner Modal */}
+      <ReceiptScannerModal
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onExtracted={(data) => {
+          setPrefillData(data);
+          setScannerOpen(false);
+          setAddModalOpen(true);
+        }}
       />
 
       {/* Delete Confirmation Modal */}
