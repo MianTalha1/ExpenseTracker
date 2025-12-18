@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { AuthProvider } from '@/lib/context/AuthContext';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { NetworkProvider } from '@/lib/context/NetworkContext';
@@ -23,50 +24,60 @@ import { ChatPage } from '@/app/(authenticated)/chat/ChatPage';
 import { SubscriptionsPage } from '@/app/(authenticated)/subscriptions/SubscriptionsPage';
 import { OnboardingPage } from '@/app/(authenticated)/onboarding/OnboardingPage';
 
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public Routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
+
+        {/* Onboarding Route (Protected, no AppShell) */}
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <AppShell />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
+          <Route path="/budgets" element={<BudgetsPage />} />
+          <Route path="/insights" element={<InsightsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
+        </Route>
+
+        {/* Default Redirect */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
       <NetworkProvider>
         <AuthProvider>
-          <Routes>
-          {/* Public Routes */}
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-          </Route>
-
-          {/* Onboarding Route (Protected, no AppShell) */}
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedRoute>
-                <OnboardingPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Protected Routes */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppShell />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/expenses" element={<ExpensesPage />} />
-            <Route path="/budgets" element={<BudgetsPage />} />
-            <Route path="/insights" element={<InsightsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/subscriptions" element={<SubscriptionsPage />} />
-          </Route>
-
-          {/* Default Redirect */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-        <OfflineToast />
+          <AnimatedRoutes />
+          <OfflineToast />
         </AuthProvider>
       </NetworkProvider>
     </ThemeProvider>

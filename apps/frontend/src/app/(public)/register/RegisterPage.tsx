@@ -3,7 +3,12 @@
  */
 
 import { RegisterForm } from '@/components/organisms/auth';
+import { PageTransition } from '@/components/atoms';
 
 export function RegisterPage() {
-  return <RegisterForm />;
+  return (
+    <PageTransition>
+      <RegisterForm />
+    </PageTransition>
+  );
 }

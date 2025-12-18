@@ -10,7 +10,7 @@ import { useDashboardData } from '@/lib/hooks/useInsights';
 import { useBudgets } from '@/lib/hooks/useBudgets';
 import { useRecentExpenses } from '@/lib/hooks/useExpenses';
 import { useDailyRecommendations } from '@/lib/hooks/useDailyRecommendations';
-import { BentoCard, BudgetProgress, Skeleton } from '@/components/atoms';
+import { BentoCard, BudgetProgress, Skeleton, PageTransition } from '@/components/atoms';
 import { AskBeforeBuyModal } from '@/components/organisms';
 import {
   TrendingUp,
@@ -86,7 +86,8 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in slide-in-up">
+    <PageTransition>
+    <div className="space-y-6">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-text-primary">
@@ -419,5 +420,6 @@ export function DashboardPage() {
         onClose={() => setIsAskBeforeBuyOpen(false)}
       />
     </div>
+    </PageTransition>
   );
 }

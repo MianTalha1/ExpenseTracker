@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
-import { BentoCard, Button, Select, ProgressBar } from '@/components/atoms';
+import { BentoCard, Button, Select, ProgressBar, PageTransition } from '@/components/atoms';
 import { FormField } from '@/components/molecules';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useCategories } from '@/lib/hooks/useCategories';
@@ -437,6 +437,7 @@ export function OnboardingPage() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-surface-primary flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         {/* Progress */}
@@ -514,5 +515,6 @@ export function OnboardingPage() {
         </BentoCard>
       </div>
     </div>
+    </PageTransition>
   );
 }

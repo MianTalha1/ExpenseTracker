@@ -13,3 +13,5 @@ export * from './Avatar';
 export * from './Modal';
 export * from './Select';
 export * from './charts';
+export * from './PageTransition';
+export * from './AnimatedOutlet';

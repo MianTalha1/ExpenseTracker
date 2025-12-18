@@ -4,10 +4,10 @@
  */
 
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
 import { cn } from '@/lib/utils/cn';
 import { Sidebar, TopBar, BottomNav } from '@/components/organisms/navigation';
 import { AddExpenseModal } from '@/components/organisms/expenses/AddExpenseModal';
+import { AnimatedOutlet } from '@/components/atoms';
 
 export function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -49,7 +49,7 @@ export function AppShell() {
 
         {/* Page Content - with bottom padding for mobile nav */}
         <main className="p-4 sm:p-6 pb-32 lg:pb-6">
-          <Outlet context={{ quickAddOpen, setQuickAddOpen }} />
+          <AnimatedOutlet context={{ quickAddOpen, setQuickAddOpen }} />
         </main>
       </div>
 

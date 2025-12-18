@@ -5,9 +5,9 @@
  * SOLID-S: Layout only, no auth logic
  */
 
-import { Outlet, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/context/AuthContext';
-import { PageSpinner } from '@/components/atoms';
+import { PageSpinner, AnimatedOutlet } from '@/components/atoms';
 
 export function AuthLayout() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,7 +39,7 @@ export function AuthLayout() {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <Outlet />
+          <AnimatedOutlet />
         </div>
       </main>
 
