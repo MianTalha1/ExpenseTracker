@@ -31,9 +31,7 @@ export function AuthLayout() {
       {/* Header */}
       <header className="py-6 px-4">
         <div className="max-w-7xl mx-auto flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-casha-primary flex items-center justify-center">
-            <span className="text-white font-bold text-sm">$</span>
-          </div>
+          <img src="/logo.png" alt="Casha" className="h-8 w-8" />
           <span className="text-xl font-bold text-text-primary">Casha</span>
         </div>
       </header>
